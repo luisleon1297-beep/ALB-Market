@@ -137,8 +137,42 @@
   }
 
   async function loadBuilds(){
-    if(!buildCatalog) buildCatalog=await fetchJson('data/offline-build-catalog.json',60000);
+    if(!buildCatalog) buildCatalog=await fetchJson('./offline-build-catalog.json',60000);
     return buildCatalog;
+  }
+
+  const CITY_MAP = {
+    'Bridgewatch':{x:820,y:470,pvpCategory:'blue'},
+    'Lymhurst':{x:795,y:165,pvpCategory:'blue'},
+    'Thetford':{x:555,y:70,pvpCategory:'blue'},
+    'Fort Sterling':{x:275,y:115,pvpCategory:'blue'},
+    'Martlock':{x:130,y:365,pvpCategory:'blue'},
+    'Caerleon':{x:505,y:315,pvpCategory:'red'}
+  };
+  const ROYAL_RING=['Bridgewatch','Lymhurst','Thetford','Fort Sterling','Martlock'];
+  function cityPath(origin,destination,mode){
+    if(origin==='Black Market') origin='Caerleon';
+    if(destination==='Black Market') destination='Caerleon';
+    if(!CITY_MAP[origin]||!CITY_MAP[destination]) return null;
+    if(origin===destination) return [origin];
+    if(origin==='Caerleon'||destination==='Caerleon') return [origin,destination];
+    const a=ROYAL_RING.indexOf(origin),b=ROYAL_RING.indexOf(destination),clockwise=[],counter=[];
+    for(let i=a;;i=(i+1)%ROYAL_RING.length){clockwise.push(ROYAL_RING[i]);if(i===b)break;}
+    for(let i=a;;i=(i-1+ROYAL_RING.length)%ROYAL_RING.length){counter.push(ROYAL_RING[i]);if(i===b)break;}
+    const safe=clockwise.length<=counter.length?clockwise:counter;
+    return mode==='fast'&&safe.length>3?[origin,'Caerleon',destination]:safe;
+  }
+  function planTravel({origin,destination,mode='safe'}={}){
+    const route=cityPath(origin,destination,mode);
+    if(!route) return {available:false,dynamic:true,reason:'Esta ciudad usa conexiones dinámicas de Roads o Mists; comprueba la conexión disponible dentro del juego.'};
+    const nodes=Object.entries(CITY_MAP).map(([name,node])=>({id:name,name,mapCategory:'city',tier:0,...node}));
+    const ringEdges=ROYAL_RING.map((name,index)=>[name,ROYAL_RING[(index+1)%ROYAL_RING.length]]);
+    const centerEdges=ROYAL_RING.map(name=>[name,'Caerleon']);
+    return {
+      available:true,
+      maps:route.map((name,index)=>({id:name,name,mapCategory:index===0||index===route.length-1?'city':'open',tier:0,pvpCategory:name==='Caerleon'?'red':'blue'})),
+      world:{width:1000,height:600,nodes,edges:[...ringEdges,...centerEdges].map(([from,to])=>({from,to})),routeIds:route}
+    };
   }
 
   async function searchBuilds({query='',weaponId='',mode='all',limit=30}={}){
@@ -162,7 +196,7 @@
     searchItems:async(query,limit=20)=>{await loadCatalog();return searchCatalog(query,limit);},
     refreshCatalog:async()=>({count:(await loadCatalog(true)).length}),
     getPrices,getPriceHistory,scanOpportunities,scanDemand,searchBuilds,getBuild,
-    planTravel:async({origin,destination})=>({available:false,dynamic:origin==='Brecilien'||destination==='Brecilien',reason:'La versión móvil muestra la guía entre ciudades; confirma las conexiones exactas dentro del juego.'}),
+    planTravel:async options=>planTravel(options),
     getRecipe:async itemId=>{const recipes=await loadRecipes();const base=String(itemId||'').split('@')[0];return recipeForEnchantedItem(recipes[itemId]||recipes[base],itemId);},
     getItemImage:async itemId=>`https://render.albiononline.com/v1/item/${encodeURIComponent(itemId)}.png?quality=1&size=128`,
     getSpellImage:async spellId=>`https://render.albiononline.com/v1/spell/${encodeURIComponent(spellId)}.png?size=96&locale=es`,

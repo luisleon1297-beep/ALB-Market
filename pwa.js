@@ -4,5 +4,5 @@ const iosHelp=document.createElement('div');iosHelp.className='pwa-ios-help';ios
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;installButton.classList.add('show');});
 installButton.onclick=async()=>{if(installPrompt){installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;installButton.classList.remove('show');return;}iosHelp.classList.add('show');};
 const isiOS=/iphone|ipad|ipod/i.test(navigator.userAgent),standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone;
-if(isiOS&&!standalone)installButton.classList.add('show');
+if(isiOS&&!standalone)installButton.remove();
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));

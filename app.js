@@ -565,10 +565,22 @@ async function renderTravelPlan() {
 
 function renderWorldMap(world) {
   if (!world?.nodes?.length) return '<div class="empty-card">El mapa no contiene coordenadas disponibles.</div>';
+  if (window.IS_PWA) {
+    const byId = new Map(world.nodes.map(node => [node.id,node]));
+    const routeIds = world.routeIds || [];
+    const routePairs = new Set(routeIds.slice(1).flatMap((id,index) => [`${routeIds[index]}|${id}`,`${id}|${routeIds[index]}`]));
+    const edges = (world.edges || []).map(edge => {
+      const from=byId.get(edge.from),to=byId.get(edge.to); if(!from||!to)return '';
+      return `<line class="${routePairs.has(`${edge.from}|${edge.to}`)?'active':''}" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}"/>`;
+    }).join('');
+    const nodes = world.nodes.map(node => `<g class="route-node ${routeIds.includes(node.id)?'active':''} ${node.pvpCategory||'other'}" transform="translate(${node.x} ${node.y})"><circle r="${routeIds.includes(node.id)?22:14}"/><text y="-${routeIds.includes(node.id)?31:23}" text-anchor="middle">${node.name}</text>${routeIds.includes(node.id)?`<text class="route-order" y="5" text-anchor="middle">${routeIds.indexOf(node.id)+1}</text>`:''}</g>`).join('');
+    return `<section class="world-map-card schematic-map"><div class="world-map-toolbar"><div><strong>Mapa de la ruta</strong><small>Guía regional entre ciudades</small></div><span>● Azul &nbsp; ● Roja</span></div><div class="schematic-map-scroll"><svg viewBox="0 0 ${world.width||1000} ${world.height||600}" role="img" aria-label="Ruta entre ciudades"><g class="route-edges">${edges}</g>${nodes}</svg></div><p class="world-map-caption">La línea dorada marca tu trayecto. Confirma dentro del juego los nombres exactos de las zonas y cualquier conexión dinámica.</p></section>`;
+  }
   return `<section class="world-map-card"><div class="world-map-toolbar"><strong>Mapa interactivo de Albion</strong><div class="world-map-mode"><button class="active" id="advanced-map-mode">Mapa completo</button><button id="local-map-mode">Mi ruta automática</button></div></div><div class="advanced-map-pane" id="advanced-map-pane"><webview id="advanced-world-map" src="https://albionfreemarket.com/albion-map" partition="persist:albion-advanced-map" webpreferences="contextIsolation=yes, nodeIntegration=no, sandbox=yes"></webview><div class="advanced-map-status" id="advanced-map-status">Cargando herramientas avanzadas…</div></div><div class="local-map-pane hidden" id="local-map-pane"><div class="world-map-legend local-map-legend"><span><i class="blue"></i>Azul</span><span><i class="yellow"></i>Amarilla</span><span><i class="red"></i>Roja</span><span><i class="black"></i>Negra</span></div><div class="world-map-shell" id="world-map-shell"><div class="world-map-canvas" id="world-map-canvas"></div><div class="world-map-search"><input id="world-map-search" list="world-map-locations" autocomplete="off" placeholder="Buscar zona…"><datalist id="world-map-locations"></datalist><button id="world-map-find" title="Buscar zona">⌕</button></div><div class="world-map-actions"><button id="world-map-route" title="Centrar la ruta">Ruta</button><button id="world-map-fullscreen" title="Pantalla completa">⛶</button></div><div class="world-map-loading" id="world-map-loading">Cargando mapa…</div></div></div><p class="world-map-caption" id="world-map-caption">Mapa completo: crea rutas con clics, abre mapas interiores, usa Roads, filtros, recursos, marcadores y el resumen de distancia y tiempo.</p></section>`;
 }
 
 function initializeAdvancedWorldMap(world, routeMaps) {
+  if (window.IS_PWA) return;
   const webview = $('advanced-world-map'), advancedPane = $('advanced-map-pane'), localPane = $('local-map-pane');
   let localStarted = false;
   const selectMode = mode => {

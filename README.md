@@ -1,13 +1,13 @@
-# Albion Market PWA 1.1.0
+# Albion Market PWA 1.2.0
 
 Versión web instalable para iPhone, Android y computadores.
 
-Esta versión corrige el diseño móvil: elimina el ancho de escritorio, adapta el mercado a tarjetas, compacta los controles y respeta las áreas seguras del iPhone.
+Esta versión restaura el catálogo de builds, activa el mapa móvil de rutas y corrige desbordamientos en Builds, Crafteo y el planificador de viaje.
 
 ## Publicar en GitHub Pages
 
 1. Crea un repositorio, por ejemplo `Albion-Market`.
-2. Sube **el contenido de esta carpeta** a la raíz del repositorio.
+2. Sube **todos los archivos y carpetas** a la raíz del repositorio. Comprueba especialmente que `offline-build-catalog.json` quede junto a `index.html`.
 3. Abre **Settings → Pages**.
 4. En **Build and deployment**, selecciona **Deploy from a branch**.
 5. Selecciona la rama `main`, carpeta `/ (root)` y pulsa **Save**.
