@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a2632">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Albion Market">
+  <title>Albion Market</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.png">
+  <link rel="apple-touch-icon" href="assets/icon.png">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+  <div class="titlebar">
+    <div class="titlebar-drag"><span class="titlebar-name">Albion Market <span class="web-badge">WEB</span></span><span class="titlebar-online"><i></i> Conectado</span></div>
+    <div class="window-controls"><button id="window-minimize" title="Minimizar">─</button><button id="window-maximize" title="Maximizar">□</button><button id="window-close" title="Cerrar">×</button></div>
+  </div>
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-word">Albion</div><small>MARKET</small></div>
+    <nav>
+      <button class="nav active" data-view="market"><span>◫</span> Mercado</button>
+      <button class="nav" data-view="travel"><span>◈</span> Mapa</button>
+      <button class="nav" data-view="resources"><span>♣</span> Recursos</button>
+      <button class="nav" data-view="fishing"><span>♓</span> Pesca</button>
+      <button class="nav" data-view="refining"><span>◆</span> Refinamiento</button>
+      <button class="nav" data-view="craft"><span>⚒</span> Crafteo</button>
+      <button class="nav" data-view="builds"><span>♜</span> Builds</button>
+      <button class="nav" data-view="routes"><span>⇄</span> Rutas</button>
+      <button class="nav" data-view="opportunities"><span>◇</span> Oportunidades</button>
+      <button class="nav" data-view="blackmarket"><span>♛</span> Black Market</button>
+      <button class="nav" data-view="demand"><span>▥</span> Demanda</button>
+      <button class="nav" data-view="assistant"><span>▦</span> Calculadoras</button>
+      <button class="nav" data-view="favorites"><span>★</span> Favoritos</button>
+      <button class="nav" data-view="history"><span>◷</span> Historial</button>
+      <button class="nav" data-view="settings"><span>⚙</span> Ajustes</button>
+    </nav>
+    <div class="server-card"><i></i><div><small>SERVIDOR</small><strong>Américas</strong></div><span>En línea</span></div>
+    <p class="side-note">Precios comunitarios<br>Albion Data Project</p>
+  </aside>
+
+  <main>
+    <header class="app-hero">
+      <div><p class="eyebrow">Economía de Albion Online</p><h1 id="page-title">Mercado</h1><p class="hero-subtitle">Compara precios, encuentra oportunidades y maximiza tu silver.</p></div>
+      <div class="hero-status"><div><span>⟳</span><small>CONSULTA API</small><strong id="last-refresh">Sin consultar</strong></div><div><span>◎</span><small>SERVIDOR</small><strong>Américas</strong></div><button class="icon-btn" id="refresh-btn" title="Consultar nuevamente">↻</button></div>
+    </header>
+
+    <section class="view active" id="market-view">
+      <div class="market-hero-tools">
+        <div class="market-tabs"><button class="active" data-market-tab="objects">Objetos</button><button data-market-tab="recipes">Recetas</button><button data-market-tab="cities">Ciudades</button></div>
+        <div class="market-search-row">
+          <div class="hero-search">
+            <div class="search-box"><span>⌕</span><input id="market-search" autocomplete="off" placeholder="Busca un objeto por nombre o identificador..."><button class="clear-search" id="clear-market-search" title="Limpiar">×</button></div>
+            <div class="suggestions" id="market-suggestions"></div>
+          </div>
+          <button class="primary market-search-button" id="market-search-btn">Buscar</button>
+        </div>
+        <div class="market-categories" id="market-categories"><button class="active" data-category="all">Todos</button><button data-category="weapons">⚔ Armas</button><button data-category="armor">♜ Armaduras</button><button data-category="tools">⚒ Herramientas</button><button data-category="resources">♣ Recursos</button><button data-category="consumables">◉ Consumibles</button><button data-category="mounts">♞ Monturas</button><button data-category="other">◇ Otros</button></div>
+      </div>
+      <div class="selected-item" id="selected-item">
+        <div class="item-art"><img id="item-image" alt=""><span id="item-tier">T4</span></div>
+        <div class="item-info"><p id="item-id">T4_BAG</p><h2 id="item-name">Bolsa del Adepto</h2><div class="item-chips"><span id="item-category">Objeto</span><span id="item-distance">Mercado</span><span id="item-tier-chip">Tier 4</span><span id="item-quality-chip">Normal</span></div><small id="item-status">Selecciona un objeto para consultar sus precios</small></div>
+        <div class="item-actions"><button class="ghost gold" id="favorite-btn">★ Añadir a favoritos</button><button class="map-item-button" id="view-item-map">⌾ Ver en mapa</button></div>
+      </div>
+      <div class="market-content-grid">
+        <section class="market-table-panel">
+          <div class="section-heading"><div><h3>Comparación por ciudad <span class="info-dot">i</span></h3><p>Los datos antiguos aparecen en ámbar y no se usan para recomendar operaciones</p></div><div class="market-controls"><label>CALIDAD<select id="market-quality"><option value="1" selected>Normal</option><option value="2">Buena</option><option value="3">Sobresaliente</option><option value="4">Excelente</option><option value="5">Obra maestra</option><option value="1,2,3,4,5">Todas</option></select></label></div></div>
+          <div class="table-wrap">
+            <table><thead><tr><th>Ciudad</th><th>Precio de venta <small>Tú compras</small></th><th>Variación</th><th>Oferta compra <small>Tú vendes</small></th><th>Volumen</th><th>Actualización</th><th></th></tr></thead><tbody id="price-rows"><tr><td colspan="7" class="empty">Busca un objeto para ver su mercado.</td></tr></tbody></table>
+          </div>
+          <button class="more-markets hidden" id="more-markets">Mostrar mercados adicionales</button>
+        </section>
+        <aside class="price-chart-card">
+          <div class="chart-heading"><strong>☷ Evolución de precio</strong><div class="chart-periods"><button data-days="7">7 días</button><button class="active" data-days="30">30 días</button><button data-days="90">90 días</button></div></div>
+          <svg id="price-chart" viewBox="0 0 900 260" preserveAspectRatio="none" aria-label="Evolución histórica del precio"><defs><linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6ad42" stop-opacity=".45"/><stop offset="1" stop-color="#e6ad42" stop-opacity="0"/></linearGradient></defs><g class="chart-grid"><path d="M0 35H900M0 100H900M0 165H900M0 230H900"/></g><path id="chart-area" class="chart-area" d=""/><path id="chart-line" class="chart-line" d=""/></svg>
+          <div class="chart-empty" id="chart-empty">Selecciona un objeto para cargar su historial</div>
+          <div class="chart-caption" id="chart-caption">Resumen del mercado · últimos 30 días</div>
+          <div class="chart-summary"><div><small>PROMEDIO</small><strong id="chart-avg">—</strong></div><div><small>PRECIO MÍNIMO</small><strong id="chart-min">—</strong></div><div><small>PRECIO MÁXIMO</small><strong id="chart-max">—</strong></div><div><small>VOLUMEN TOTAL</small><strong id="chart-volume">—</strong></div></div>
+        </aside>
+      </div>
+      <div class="insight-grid">
+        <article class="insight"><span class="badge buy">MEJOR COMPRA</span><strong id="best-buy">—</strong><p id="best-buy-city">Sin datos</p></article>
+        <article class="insight"><span class="badge sell">MEJOR VENTA INMEDIATA</span><strong id="best-sell">—</strong><p id="best-sell-city">Sin datos</p></article>
+        <article class="insight featured"><span class="badge route">MEJOR RUTA</span><strong id="best-route">—</strong><p id="best-route-detail">Compra y vende entre ciudades</p></article>
+      </div>
+    </section>
+
+    <section class="view" id="resources-view">
+      <div class="feature-hero"><div><p class="eyebrow">RECOLECCIÓN RENTABLE</p><h2>Radar de recursos</h2><p>Calcula qué recurso recolectar, dónde venderlo y el silver estimado por hora.</p></div><div class="feature-icon">♣</div></div>
+      <div class="panel">
+        <div class="filter-grid resource-filters">
+          <label>Tier<select id="resource-tier"><option value="4,5">T4–T5</option><option value="4,5,6" selected>T4–T6</option><option value="6,7">T6–T7</option><option value="7,8">T7–T8</option><option value="4,5,6,7,8">Todos</option></select></label>
+          <label>Encantamiento<select id="resource-enchant"><option value="0">Plano</option><option value="0,1" selected>Plano y .1</option><option value="0,1,2">Hasta .2</option><option value="0,1,2,3">Todos</option></select></label>
+          <label>Especialización<input id="gather-spec" type="number" min="0" max="100" value="25"></label>
+          <label>Bonus de rendimiento %<input id="gather-yield" type="number" min="0" max="250" value="25"></label>
+          <label>Riesgo<select id="gather-risk"><option value="safe">Azul/amarilla</option><option value="red">Zona roja</option><option value="black">Zona negra</option></select></label>
+          <label>Duración sesión (min)<input id="gather-minutes" type="number" min="10" value="60"></label>
+          <button class="primary" id="scan-resources">Calcular mejores recursos</button>
+        </div>
+        <div class="summary-strip" id="resource-status">Configura tu personaje y analiza el mercado.</div>
+        <div class="resource-table-header"><span>Recurso</span><span>Mejor venta</span><span>Mercado</span><span>Silver/hora</span><span>Confianza</span></div>
+        <div class="resource-results" id="resource-results"><div class="empty-card">Aquí aparecerán los recursos recomendados.</div></div>
+      </div>
+    </section>
+
+    <section class="view" id="fishing-view">
+      <div class="fishing-hero">
+        <div><p class="eyebrow">GUÍA Y RENTABILIDAD EN TIEMPO REAL</p><h2>Centro de pesca</h2><p>Encuentra peces por agua y bioma, decide qué hacer con cada captura y compara recetas con precios reales.</p></div>
+        <div class="fishing-hero-mark">♓</div>
+      </div>
+      <div class="fishing-filters panel">
+        <label>Tier<select id="fish-tier"><option value="all" selected>Todos</option><option value="3">T3</option><option value="5">T5</option><option value="7">T7</option><option value="8">T8</option></select></label>
+        <label>Agua<select id="fish-water"><option value="all">Toda</option><option value="fresh">Agua dulce</option><option value="salt">Agua salada</option></select></label>
+        <label>Bioma<select id="fish-biome"><option value="all">Todos</option><option value="forest">Bosque</option><option value="swamp">Pantano</option><option value="mountain">Montaña</option><option value="highland">Tierras altas</option><option value="steppe">Estepa</option><option value="ancient">Tierras Ancestrales</option><option value="avalon">Caminos de Avalon</option><option value="ocean">Costa</option></select></label>
+        <label>Ordenar<select id="fish-sort"><option value="tier">Tier</option><option value="money">Mayor valor estimado</option><option value="name">Nombre</option></select></label>
+        <label>Mercado<select id="fish-city"></select></label>
+        <label>Impuesto %<input id="fish-tax" type="number" min="0" max="100" step="0.1" value="6.5"></label>
+        <button class="primary" id="scan-fish-recipes">↻ Precios y recetas</button>
+      </div>
+      <div class="fishing-kpis">
+        <article><small>PECES EN LA GUÍA</small><strong id="fish-count">—</strong><span>comunes, raros y especiales</span></article>
+        <article><small>MEJOR OBJETIVO</small><strong id="fish-best-target">Anguila de agua podrida</strong><span>Bosque T7–T8 · agua dulce</span></article>
+        <article class="profit"><small>MEJOR RECETA AHORA</small><strong id="fish-best-recipe">Consulta el mercado</strong><span id="fish-best-profit">Sin precios todavía</span></article>
+      </div>
+      <div class="fishing-layout">
+        <section class="panel fishing-catalog-panel">
+          <div class="panel-title"><div><p class="eyebrow">CATÁLOGO Y PRECIOS</p><h2>Peces y qué hacer con ellos</h2><p>Cada pez muestra orden de venta y venta inmediata en la ciudad seleccionada.</p></div></div>
+          <div class="fish-grid" id="fish-grid"></div>
+        </section>
+        <aside class="panel fishing-maps-panel">
+          <div class="panel-title"><div><p class="eyebrow">DÓNDE PESCAR</p><h2>Mapas recomendados</h2><p>Prioriza T7–T8 con suficiente agua; revisa el minimapa antes de salir.</p></div></div>
+          <div class="fish-map-list" id="fish-map-list"></div>
+          <div class="fish-warning"><strong>Riesgo</strong><p>Las zonas negras T8 ofrecen los peces de mayor tier, pero puedes perder el equipo. Lleva un set que puedas reemplazar.</p></div>
+        </aside>
+      </div>
+      <section class="panel fishing-recipes-panel">
+        <div class="panel-title"><div><p class="eyebrow">COCINA RENTABLE</p><h2>Recetas con pescado</h2><p>Ingredientes y cantidades reales por fabricación, con costo desglosado y ganancia en el mercado elegido.</p></div><span id="fish-price-status">Presiona “Precios y recetas”</span></div>
+        <div id="fish-recipe-list" class="fish-recipe-list"><div class="empty-card">Selecciona una ciudad y consulta el mercado para ordenar las recetas por ganancia real.</div></div>
+        <div class="notice"><strong>Lectura correcta</strong><p>Los precios comunitarios no son el mercado en vivo. Los cálculos que superan tu límite de antigüedad aparecen como “estimados”; si falta el precio de un ingrediente, la receta queda como “sin datos” en vez de inventarlo.</p></div>
+      </section>
+    </section>
+
+    <section class="view" id="refining-view">
+      <div class="refine-topbar"><div><p class="eyebrow">CALCULADORA PROFESIONAL</p><h2>Refinamiento</h2><p>Rentabilidad real con retorno, foco, impuestos y datos del servidor Américas.</p></div><div class="refine-tier-pickers"><label>TIER<select id="refine-tier"><option value="4">T4</option><option value="5" selected>T5</option><option value="6">T6</option><option value="7">T7</option><option value="8">T8</option></select></label><label>ENCANTAMIENTO<select id="refine-enchant"><option value="0" selected>.0</option><option value="1">.1</option><option value="2">.2</option><option value="3">.3</option><option value="4">.4</option></select></label></div></div>
+      <div class="refining-workbench">
+        <aside class="panel refine-config-column">
+          <div class="refine-section-title"><small>CONFIGURACIÓN</small><strong>Elegir recurso</strong></div>
+          <div class="refine-resource-grid" id="refine-resource-buttons">
+            <button data-resource="LEATHER"><b>◒</b><span>Cuero</span></button><button data-resource="CLOTH"><b>✦</b><span>Tela</span></button><button data-resource="PLANKS"><b>♠</b><span>Madera</span></button><button class="active" data-resource="METALBAR"><b>◆</b><span>Mineral</span></button><button data-resource="STONEBLOCK"><b>⬟</b><span>Piedra</span></button>
+          </div>
+          <div class="refine-block"><strong>LUGAR DE REFINADO</strong><label>Ubicación<select id="refine-location"><option value="bonus" selected>Ciudad con bono</option><option value="normal">Sin bono</option></select></label><span class="refine-bonus-note" id="refine-bonus-city">Bono: Thetford</span></div>
+          <div class="refine-block"><strong>ACTIVIDAD Y FOCO</strong><label>Bonificación diaria<select id="refine-daily"><option value="0" selected>Sin bonus diario</option><option value="10">Diario +10%</option><option value="20">Diario +20%</option></select></label><div class="refine-switches"><label class="refine-check"><input type="checkbox" id="refine-focus"><span>Aplicar foco</span><small>Mejora retorno y calcula SPF</small></label><label class="refine-check"><input type="checkbox" id="refine-heart"><span>Corazón de facción</span><small id="refine-heart-help">Reduce un recurso crudo</small></label></div></div>
+          <div class="return-card"><span>TASA DE RETORNO</span><strong id="refine-return-display">36,7%</strong><small>Actualización instantánea</small></div>
+          <div class="refine-block tax-block"><strong>TARIFAS DE MERCADO</strong><label>Impuesto<select id="refine-tax-mode"><option value="6.5" selected>Premium (6,5%)</option><option value="10.5">Sin Premium (10,5%)</option><option value="0">Comercio (0%)</option><option value="custom">Personalizado</option></select></label><label>Personalizado %<input id="refine-tax-custom" type="number" min="0" max="100" step="0.1" value="6.5" disabled></label></div>
+          <details class="refine-spec-details"><summary>Especializaciones T4–T8</summary><div class="spec-grid"><label>T4<input id="refine-spec-4" type="number" min="0" max="100" value="0"></label><label>T5<input id="refine-spec-5" type="number" min="0" max="100" value="0"></label><label>T6<input id="refine-spec-6" type="number" min="0" max="100" value="0"></label><label>T7<input id="refine-spec-7" type="number" min="0" max="100" value="0"></label><label>T8<input id="refine-spec-8" type="number" min="0" max="100" value="0"></label></div></details>
+        </aside>
+
+        <section class="panel refine-market-column">
+          <div class="refine-column-heading"><div><small>PRECIOS DE REFINADO</small><strong>Datos de mercado <span id="refine-city-label">Thetford</span></strong></div><button class="ghost gold" id="refine-load-prices">↻ Precios API</button></div>
+          <div class="refine-market-grid">
+            <label>Comprar materiales en<select id="refine-material-city"></select></label><label>Vender refinado en<select id="refine-sale-city"></select></label><label>Tipo de venta<select id="refine-sale-mode"><option value="sell_order" selected>Orden de venta</option><option value="instant">Venta inmediata</option></select></label><label>Tarifa de estación<input id="refine-station-rate" type="number" min="0" max="9999" value="500"></label>
+          </div>
+          <div class="refine-price-grid">
+            <label>Cantidad a refinar<input id="refine-qty" type="number" min="1" value="100"><small>unidades finales del lote</small></label><label><span id="refine-raw-label">Mineral T5.0</span><input id="refine-price-raw" type="number" min="0" placeholder="Precio unitario"><small id="refine-raw-multiplier">×3 por unidad</small></label><label>Precio unitario de venta<input id="refine-price-sell" type="number" min="0" placeholder="Precio unitario"><small id="refine-sell-note">orden de venta</small></label><label><span id="refine-prev-label">Lingote T4.0</span><input id="refine-price-prev" type="number" min="0" placeholder="Precio unitario"><small>×1 por unidad</small></label><label id="refine-heart-price-wrap" class="hidden"><span id="refine-heart-label">Corazón de facción</span><input id="refine-price-heart" type="number" min="0" placeholder="Precio unitario"><small>×1 por unidad</small></label>
+          </div>
+          <div class="summary-strip" id="refine-market-status">Carga precios actuales o completa los campos manualmente.</div>
+          <button class="primary wide refine-calculate" id="calculate-refine">Calcular refinamiento</button>
+          <div class="refine-history-card">
+            <div class="refine-history-head"><div><small>RESUMEN DEL MERCADO</small><strong id="refine-history-title">Producto refinado</strong></div><span id="refine-history-age">Sin datos</span></div>
+            <div class="refine-market-stats"><div><small>MEJOR OFERTA</small><strong id="refine-stat-sell">—</strong></div><div><small>DEMANDA ACTIVA</small><strong id="refine-stat-buy">—</strong></div><div><small>SPREAD</small><strong id="refine-stat-spread">—</strong></div><div><small>VOLUMEN 30D</small><strong id="refine-stat-volume">—</strong></div></div>
+            <svg class="refine-chart" viewBox="0 0 900 190" preserveAspectRatio="none"><defs><linearGradient id="refine-chart-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#58c7ff" stop-opacity=".25"/><stop offset="1" stop-color="#58c7ff" stop-opacity="0"/></linearGradient></defs><g class="chart-grid"><path d="M0 30H900M0 80H900M0 130H900M0 180H900"/></g><path id="refine-chart-area" class="refine-chart-area"/><path id="refine-chart-line" class="refine-chart-line"/></svg>
+          </div>
+        </section>
+
+        <aside class="panel refine-result-column">
+          <div class="refine-product-card"><div class="refine-product-icon">◆</div><div><strong id="refine-product-name">Lingotes</strong><small id="refine-product-tier">T5.0 Material refinado</small></div></div>
+          <article class="refine-profit-card"><div><small>BENEFICIO NETO</small><strong id="refine-profit">—</strong></div><span id="refine-margin">Margen: —</span></article>
+          <div class="refine-results-grid"><article><small>INVERSIÓN</small><strong id="refine-investment">—</strong></article><article><small>TARIFA DE ESTACIÓN</small><strong id="refine-station-result">—</strong></article><article><small>INGRESOS DE VENTA</small><strong id="refine-revenue">—</strong><span id="refine-tax-result">Impuestos: —</span></article><article><small>MATERIALES</small><strong id="refine-materials-required">—</strong><span id="refine-materials-detail">Completa los precios</span></article><article><small>FOCO DEL LOTE</small><strong id="refine-focus-total">—</strong><span id="refine-focus-unit">— por unidad</span></article><article><small>SILVER POR FOCO</small><strong id="refine-spf">—</strong><span id="refine-focus-potential">Potencial 10k: —</span></article></div>
+          <div class="refine-decision"><p class="eyebrow">MEJOR JUGADA AHORA</p><h2 id="refine-decision-title">Esperando datos</h2><p id="refine-decision-detail">Carga precios recientes para comparar el escenario.</p></div>
+          <div class="confidence-card"><small>CONFIANZA</small><strong id="refine-confidence">Baja</strong><span id="refine-confidence-detail">Faltan precios</span></div>
+          <button class="ghost wide" id="refine-save-result" disabled>+ Añadir al historial</button>
+        </aside>
+      </div>
+    </section>
+
+    <section class="view" id="builds-view">
+      <div class="feature-hero builds-hero"><div><p class="eyebrow">BUILDS DE LA COMUNIDAD + PRECIOS REALES</p><h2>Buscador de builds</h2><p>Encuentra un set, ajústalo por tier y encantamiento y descubre dónde comprarlo más barato.</p></div><div class="feature-icon">♜</div></div>
+      <div class="panel build-finder">
+        <div class="build-search-grid">
+          <label>Arma principal<div class="search-box compact"><span>⌕</span><input id="community-build-search" autocomplete="off" placeholder="Patas de oso, Badon, Deathgivers..."></div><div class="suggestions build-weapon-suggestions" id="community-weapon-suggestions"></div></label>
+          <label>Actividad<select id="community-build-mode"><option value="all">Todas</option><option value="mists-solo">Nieblas solo</option><option value="hellgate-2v2">Hellgate 2v2</option><option value="gank">Gank</option><option value="openworld-solo">Mundo abierto</option><option value="pve-group">PvE grupal</option><option value="small-fight-zvz">Pelea pequeña / ZvZ</option></select></label>
+          <label>Tier<select id="build-tier"><option value="4">T4</option><option value="5">T5</option><option value="6">T6</option><option value="7">T7</option><option value="8" selected>T8</option></select></label>
+          <label>Encantamiento<select id="build-enchantment"><option value="0">Plano .0</option><option value="1">.1</option><option value="2">.2</option><option value="3">.3</option><option value="4">.4</option></select></label>
+          <label>Calidad<select id="build-quality"><option value="1">Normal</option><option value="2">Buena</option><option value="3">Sobresaliente</option><option value="4">Excelente</option><option value="5">Obra maestra</option></select></label>
+          <button class="primary" id="search-community-builds">Buscar builds</button>
+        </div>
+        <div class="community-build-results" id="community-build-results"><div class="empty-card">Busca un arma para ver builds que realmente la equipan.</div></div>
+      </div>
+      <div class="community-build-layout">
+        <div class="panel build-showcase">
+          <div class="panel-title"><div><p class="eyebrow" id="build-mode-label">BUILD SELECCIONADA</p><h2 id="build-title">Tu build personalizada</h2><small id="build-author">Añade objetos o selecciona una build comunitaria.</small></div><button class="ghost" id="clear-build">Vaciar</button></div>
+          <div class="build-loadout" id="build-loadout"><div class="empty-card">Selecciona una build para ver el equipamiento.</div></div>
+          <details class="manual-build-tools"><summary>Editar o crear build manualmente</summary><div class="build-presets" id="build-presets"><button data-preset="pve">PvE económica</button><button data-preset="gather">Recolector escape</button><button data-preset="transport">Transporte</button></div><label>Buscar objeto para añadir</label><div class="search-box compact"><span>⌕</span><input id="build-search" autocomplete="off" placeholder="Casco, arma, capa, comida..."></div><div class="suggestions static" id="build-suggestions"></div></details>
+          <div class="build-slots hidden" id="build-slots"></div>
+        </div>
+        <div class="panel build-price-panel">
+          <div class="panel-title"><div><p class="eyebrow">RECOMENDACIÓN DE COMPRA</p><h2>¿Dónde sale más barato?</h2></div></div>
+          <div class="form-grid"><label>Presupuesto<input id="build-budget" type="number" min="0" value="1000000"></label><label>Máxima antigüedad<strong id="build-freshness">2 h</strong></label></div>
+          <button class="primary wide" id="calculate-build">Comparar set en todas las ciudades</button>
+          <div class="build-buy-summary" id="build-buy-summary"><div class="empty-card">Selecciona una build para comparar sus precios.</div></div>
+          <div class="build-totals" id="build-totals"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="assistant-view">
+      <div class="feature-hero silver-hero"><div><p class="eyebrow">CENTRO DE GANANCIAS</p><h2>Asistente de Silver</h2><p>Convierte tu capital y tiempo disponible en un plan de actividades.</p></div><div class="feature-icon">🜚</div></div>
+      <div class="panel">
+        <div class="filter-grid assistant-filters">
+          <label>Capital disponible<input id="assistant-capital" type="number" min="0" value="2000000"></label>
+          <label>Tiempo disponible (min)<input id="assistant-time" type="number" min="15" value="90"></label>
+          <label>Riesgo máximo<select id="assistant-risk"><option value="safe">Bajo</option><option value="medium" selected>Medio</option><option value="high">Alto</option></select></label>
+          <label>Actividad<select id="assistant-activity"><option value="all">Todas</option><option value="gather">Recolectar</option><option value="trade">Comerciar</option><option value="refine">Refinar</option><option value="blackmarket">Mercado Negro</option></select></label>
+          <button class="primary" id="generate-plan">Crear mi plan</button>
+        </div>
+        <div class="plan-grid" id="assistant-plans"><div class="empty-card">Analiza Recursos u Oportunidades y crea tu plan.</div></div>
+      </div>
+
+      <div class="calculator-tabs" id="calculator-tabs"><button class="active" data-calc="transport">Transporte</button><button data-calc="blackmarket">Mercado Negro</button><button data-calc="specialization">Especialización</button></div>
+      <div class="panel calc-pane active" id="transport-calc">
+        <div class="panel-title"><div><p class="eyebrow">CARGA Y RIESGO</p><h2>Simulador de transporte</h2></div></div>
+        <div class="filter-grid calc-grid"><label>Inversión por viaje<input id="transport-investment" type="number" min="0" value="1000000"></label><label>Ganancia esperada %<input id="transport-margin" type="number" value="15"></label><label>Número de viajes<input id="transport-trips" type="number" min="1" value="3"></label><label>Probabilidad de muerte %<input id="transport-death" type="number" min="0" max="100" value="3"></label><label>Costo del equipo<input id="transport-gear" type="number" min="0" value="150000"></label><button class="primary" id="calculate-transport">Simular</button></div>
+        <div class="calc-result" id="transport-result">Calcula la ganancia después del riesgo de perder carga y equipo.</div>
+      </div>
+      <div class="panel calc-pane" id="blackmarket-calc">
+        <div class="panel-title"><div><p class="eyebrow">CAERLEON</p><h2>Calculadora Mercado Negro</h2></div></div>
+        <div class="filter-grid calc-grid"><label>Costo de compra/fabricación<input id="bm-cost" type="number" min="0" value="100000"></label><label>Precio compra Mercado Negro<input id="bm-price" type="number" min="0" value="145000"></label><label>Impuestos %<input id="bm-tax" type="number" min="0" value="4"></label><label>Riesgo estimado %<input id="bm-risk" type="number" min="0" max="100" value="5"></label><label>Costo de transporte<input id="bm-transport" type="number" min="0" value="5000"></label><button class="primary" id="calculate-bm">Calcular</button></div>
+        <div class="calc-result" id="bm-result">Incluye la pérdida esperada por transportar hasta Caerleon.</div>
+      </div>
+      <div class="panel calc-pane" id="specialization-calc">
+        <div class="panel-title"><div><p class="eyebrow">PROGRESIÓN</p><h2>Retorno de especialización</h2></div></div>
+        <div class="filter-grid calc-grid"><label>Inversión para subir<input id="spec-investment" type="number" min="0" value="5000000"></label><label>Ganancia actual/hora<input id="spec-current" type="number" min="0" value="500000"></label><label>Mejora esperada %<input id="spec-improvement" type="number" min="0" value="12"></label><label>Horas por semana<input id="spec-hours" type="number" min="1" value="10"></label><button class="primary" id="calculate-spec">Calcular recuperación</button></div>
+        <div class="calc-result" id="spec-result">Descubre cuántas horas necesitas para recuperar la inversión.</div>
+      </div>
+    </section>
+
+    <section class="view" id="history-view">
+      <div class="feature-hero"><div><p class="eyebrow">TU ECONOMÍA</p><h2>Diario de ganancias</h2><p>Registra sesiones y descubre qué actividad realmente te da más silver.</p></div><div class="feature-icon">◷</div></div>
+      <div class="panel session-panel">
+        <div class="filter-grid history-entry"><label>Actividad<select id="session-activity"><option>Recolección</option><option>Comercio</option><option>Crafteo</option><option>Refinado</option><option>Mercado Negro</option></select></label><label>Duración (min)<input id="session-duration" type="number" min="1" value="60"></label><label>Ingresos<input id="session-income" type="number" min="0" value="0"></label><label>Gastos y pérdidas<input id="session-expense" type="number" min="0" value="0"></label><label>Nota<input id="session-note" placeholder="Ej: Piel T6 en Bridgewatch"></label><button class="primary" id="save-session">Guardar sesión</button></div>
+        <div class="history-summary" id="history-summary"></div>
+        <div class="history-list" id="history-list"></div>
+      </div>
+    </section>
+
+    <section class="view" id="craft-view">
+      <div class="two-column">
+        <div class="panel">
+          <div class="panel-title"><div><p class="eyebrow">RECETA</p><h2>Calculadora de crafteo</h2></div><span class="pill">Completa</span></div>
+          <label>Objeto a fabricar</label>
+          <div class="search-box compact"><span>⌕</span><input id="craft-search" autocomplete="off" placeholder="Busca un objeto..."></div>
+          <div class="suggestions static" id="craft-suggestions"></div>
+          <div id="recipe-state" class="recipe-state">Selecciona un objeto para cargar su receta.</div>
+          <label id="recipe-variant-wrap" class="recipe-variant hidden">Variante de receta<select id="recipe-variant"></select></label>
+          <div id="materials-list" class="materials"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><div><p class="eyebrow">CONFIGURACIÓN</p><h2>Tu crafteo</h2></div></div>
+          <div class="form-grid">
+            <label>Cantidad<input id="craft-qty" type="number" min="1" value="1"></label>
+            <label>Encantamiento<select id="craft-enchantment"><option value="0">Plano (.0)</option><option value="1">.1</option><option value="2">.2</option><option value="3">.3</option><option value="4">.4</option></select></label>
+            <label>Ciudad de materiales<select id="material-city"></select></label>
+            <label>Ciudad de venta<select id="sale-city"></select></label>
+            <label>Retorno de recursos %<input id="return-rate" type="number" min="0" max="95" step="0.1" value="15.2"></label>
+            <label>Impuesto de venta %<input id="sales-tax" type="number" min="0" step="0.1" value="4"></label>
+            <label>Tarifa de publicación %<input id="setup-fee" type="number" min="0" step="0.1" value="2.5"></label>
+            <label>Uso estación /100 nutrición<input id="station-fee" type="number" min="0" value="500"></label>
+            <label>Gastos extra<input id="extra-cost" type="number" min="0" value="0"></label>
+          </div>
+          <div class="focus-box"><label class="toggle"><input id="use-focus" type="checkbox"><span></span> Usar foco</label><div class="form-grid three"><label>Foco base<input id="base-focus" type="number" min="0" value="0"></label><label>Maestría<input id="mastery" type="number" min="0" max="100" value="0"></label><label>Especialización<input id="specialization" type="number" min="0" max="100" value="0"></label></div></div>
+          <button class="primary wide" id="calculate-btn">Calcular con precios disponibles</button>
+        </div>
+      </div>
+      <div class="results" id="craft-results">
+        <article><small>COSTO MATERIALES</small><strong id="result-materials">—</strong><span>después del retorno</span></article>
+        <article><small>INGRESO NETO</small><strong id="result-revenue">—</strong><span>después de impuestos</span></article>
+        <article class="profit"><small>GANANCIA ESTIMADA</small><strong id="result-profit">—</strong><span id="result-margin">— margen</span></article>
+        <article><small>FOCO ESTIMADO</small><strong id="result-focus">—</strong><span>según maestría y especialización</span></article>
+      </div>
+    </section>
+
+    <section class="view" id="routes-view">
+      <div class="panel">
+        <div class="panel-title"><div><p class="eyebrow">TRANSPORTE</p><h2>Mejores rutas de tus favoritos</h2><p>Compara compra inmediata con venta inmediata después de impuestos.</p></div><button class="primary" id="scan-routes">Analizar rutas</button></div>
+        <div class="route-list" id="route-list"><div class="empty-card">Añade objetos a favoritos y luego analiza las rutas.</div></div>
+      </div>
+    </section>
+
+    <section class="view" id="travel-view">
+      <div class="panel travel-panel">
+        <div class="panel-title"><div><p class="eyebrow">PLANIFICADOR</p><h2>Mapa de viaje</h2><p>Elige el trayecto para ver la ruta sobre el mapa y la secuencia exacta de zonas.</p></div></div>
+        <div class="travel-form">
+          <label>CIUDAD DE ORIGEN<select id="travel-origin"></select></label>
+          <button class="travel-swap" id="travel-swap" title="Intercambiar ciudades">⇄</button>
+          <label>CIUDAD DE DESTINO<select id="travel-destination"></select></label>
+          <label>TIPO DE RUTA<select id="travel-mode"><option value="safe">Más segura</option><option value="fast">Más rápida</option></select></label>
+          <button class="primary" id="plan-travel">Mostrar ruta</button>
+        </div>
+        <div class="travel-result" id="travel-result">
+          <div class="empty-card">Selecciona dos ciudades para ver las indicaciones.</div>
+        </div>
+        <div class="notice"><strong>Importante</strong><p>La secuencia muestra las conexiones permanentes mapa por mapa. Roads y Mists son dinámicos, por lo que deben comprobarse directamente en el juego.</p></div>
+      </div>
+    </section>
+
+    <section class="view" id="opportunities-view">
+      <div class="panel">
+        <div class="panel-title opportunity-title">
+          <div><p class="eyebrow">ESCÁNER DE MERCADO</p><h2>Mejores objetos para comprar y vender</h2><p>Compara órdenes actuales entre ciudades y calcula la ganancia después de impuestos.</p></div>
+          <div class="opportunity-controls">
+            <label>TIER<select id="opportunity-tier"><option value="4,5,6,7,8">T4–T8</option><option value="4">T4</option><option value="5">T5</option><option value="6">T6</option><option value="7">T7</option><option value="8">T8</option></select></label>
+            <label>TIPO<select id="opportunity-category"><option value="all">Todos</option><option value="resources">Recursos</option><option value="equipment">Equipamiento</option><option value="other">Comida, pociones y monturas</option></select></label>
+            <label>ORDENAR<select id="opportunity-sort"><option value="profit">Mayor ganancia</option><option value="margin">Mayor margen</option></select></label>
+            <button class="primary" id="scan-opportunities">Analizar mercado</button>
+          </div>
+        </div>
+        <div class="opportunity-summary"><strong id="opportunity-status">Presiona “Analizar mercado” para comenzar.</strong><span>Calidad normal · solo datos recientes · hasta 1.200 objetos</span></div>
+        <div class="opportunity-header"><span>#</span><span>Objeto</span><span>Comprar</span><span>Vender inmediatamente</span><span>Ganancia neta</span><span>Datos</span></div>
+        <div class="opportunity-list" id="opportunity-list"><div class="empty-card">Aquí aparecerán las mejores oportunidades encontradas.</div></div>
+        <div class="notice"><strong>Importante</strong><p>La ganancia no incluye tiempo de viaje, riesgo de transporte ni cambios del mercado mientras te desplazas.</p></div>
+      </div>
+    </section>
+
+    <section class="view" id="blackmarket-view">
+      <div class="blackmarket-shell">
+        <div class="blackmarket-heading">
+          <div><p class="eyebrow">CAERLEON · MERCADO NEGRO</p><h2>Objetos rentables para vender</h2><p>Compra equipamiento en Caerleon y véndelo inmediatamente a las órdenes activas del Black Market.</p></div>
+          <button class="primary" id="scan-blackmarket">Buscar oportunidades</button>
+        </div>
+        <div class="blackmarket-tabs"><button class="active">Mejores oportunidades</button><button id="blackmarket-focus-search">Buscador</button></div>
+        <div class="blackmarket-filters">
+          <label>BUSCAR OBJETO<input id="blackmarket-search" placeholder="Nombre o identificador..."></label>
+          <label>TIER<select id="blackmarket-tier"><option value="4,5,6,7,8">T4–T8</option><option value="4">T4</option><option value="5">T5</option><option value="6">T6</option><option value="7">T7</option><option value="8">T8</option></select></label>
+          <label>ENCANTAMIENTO<select id="blackmarket-enchant"><option value="0,1,2,3,4">Todos</option><option value="0">Plano</option><option value="1">.1</option><option value="2">.2</option><option value="3">.3</option><option value="4">.4</option></select></label>
+          <label>ANTIGÜEDAD MÁXIMA<select id="blackmarket-age"><option value="2">2 horas</option><option value="6">6 horas</option><option value="12">12 horas</option><option value="24" selected>24 horas</option><option value="72">3 días</option></select></label>
+          <label>IMPUESTO %<input id="blackmarket-tax" type="number" min="0" max="20" step="0.1" value="4"></label>
+          <label>CAPITAL MÁXIMO<input id="blackmarket-capital" type="number" min="0" step="1000" value="1000000"></label>
+          <label>GANANCIA MÍNIMA<input id="blackmarket-min-profit" type="number" min="0" step="100" value="1000"></label>
+          <label>ORDENAR<select id="blackmarket-sort"><option value="profit">Mayor ganancia</option><option value="margin">Mayor margen</option><option value="freshness">Más reciente</option></select></label>
+        </div>
+        <div class="blackmarket-summary"><strong id="blackmarket-status">Presiona “Buscar oportunidades” para analizar Caerleon y Black Market.</strong><span>Venta directa · impuesto descontado · precios comunitarios</span></div>
+        <div class="blackmarket-layout">
+          <div class="blackmarket-ranking"><div class="blackmarket-list-head"><span>#</span><span>Objeto</span><span>Compra</span><span>Black Market</span><span>Neto</span><span>Confianza</span></div><div id="blackmarket-list" class="blackmarket-list"><div class="empty-card">Aquí aparecerán los objetos rentables.</div></div></div>
+          <aside class="blackmarket-detail" id="blackmarket-detail"><div class="empty-card">Selecciona una oportunidad para comparar todas sus calidades.</div></aside>
+        </div>
+        <div class="notice"><strong>Antes de comprar</strong><p>Comprueba la orden dentro del juego. Una orden del Black Market puede completarse mientras compras el objeto. Los datos antiguos se identifican y nunca se presentan como exactos.</p></div>
+      </div>
+    </section>
+
+    <section class="view" id="demand-view">
+      <div class="panel">
+        <div class="panel-title demand-title">
+          <div><p class="eyebrow">DEMANDA PARA CRAFTEAR</p><h2>Objetos más comprados por categoría</h2><p>Usa las ventas registradas para descubrir qué productos tienen mayor rotación antes de invertir en materiales.</p></div>
+          <div class="demand-controls">
+            <label>CATEGORÍA<select id="demand-category"><option value="weapons">Armas</option><option value="armor">Armaduras</option><option value="tools">Herramientas</option><option value="consumables">Consumibles</option><option value="mounts">Monturas</option></select></label>
+            <label>TIER<select id="demand-tier"><option value="4,5,6,7,8">T4–T8</option><option value="4">T4</option><option value="5">T5</option><option value="6">T6</option><option value="7">T7</option><option value="8">T8</option></select></label>
+            <label>PERÍODO<select id="demand-days"><option value="7">7 días</option><option value="30" selected>30 días</option><option value="90">90 días</option></select></label>
+            <button class="primary" id="scan-demand">Analizar demanda</button>
+          </div>
+        </div>
+        <div class="demand-summary"><strong id="demand-status">Selecciona una categoría y presiona “Analizar demanda”.</strong><span>Solo objetos fabricables · calidad normal · servidor Américas</span></div>
+        <div class="demand-header"><span>#</span><span>Objeto fabricable</span><span>Unidades compradas</span><span>Mejor ciudad</span><span>Precio promedio</span><span>Recomendación</span><span>Datos</span></div>
+        <div class="demand-list" id="demand-list"><div class="empty-card">Aquí aparecerán los objetos con mayor demanda.</div></div>
+        <div class="notice"><strong>Cómo usarlo</strong><p>Una demanda alta no garantiza ganancia. Abre el objeto en Crafteo para comparar el costo real de materiales, retorno, impuestos y precio de venta.</p></div>
+      </div>
+    </section>
+
+    <section class="view" id="favorites-view">
+      <div class="panel">
+        <div class="panel-title"><div><p class="eyebrow">SEGUIMIENTO</p><h2>Favoritos y alertas</h2><p>La app revisa las alertas cada 5 minutos mientras está abierta.</p></div></div>
+        <div id="favorites-list" class="favorite-list"></div>
+      </div>
+    </section>
+
+    <section class="view" id="settings-view">
+      <div class="panel settings-panel">
+        <p class="eyebrow">DATOS</p><h2>Ajustes</h2>
+        <div class="setting"><div><strong>Servidor de Albion</strong><p>Los precios se consultan en el servidor occidental.</p></div><span class="pill">Américas</span></div>
+        <div class="setting"><div><strong>Fuentes inteligentes de precios</strong><p>Combina AlbionMarket.gg y Albion Data Project; conserva por separado la compra y venta con fecha más reciente.</p></div><span class="pill">Activo</span></div>
+        <div class="setting"><div><strong>Antigüedad máxima permitida</strong><p>Los precios anteriores a este límite no se usan para recomendar compras, ventas o recursos.</p></div><select id="stale-hours"><option value="0.5">30 minutos</option><option value="1">1 hora</option><option value="2" selected>2 horas</option><option value="6">6 horas</option><option value="12">12 horas</option><option value="24">24 horas</option></select></div>
+        <div class="setting"><div><strong>Actualizar catálogo de objetos</strong><p>Descarga nombres y objetos nuevos del juego.</p></div><button class="ghost" id="catalog-refresh">Actualizar catálogo</button></div>
+        <div class="notice"><strong>Cómo obtener precios más actuales</strong><p>La app combina dos fuentes comunitarias y consulta de nuevo cada 60 segundos. Ninguna fuente puede leer todo el mercado de Albion en vivo: el dato cambia cuando un jugador con Albion Market Client o Albion Data Client abre ese mercado. Revisa siempre la antigüedad y usa 30 minutos como límite para operaciones costosas.</p></div>
+      </div>
+    </section>
+    <div id="toast" class="toast"></div>
+  </main>
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="calculations.js"></script>
+  <script src="browser-adapter.js"></script>
+  <script src="app.js"></script>
+  <script src="pwa.js"></script>
+</body>
+</html>
