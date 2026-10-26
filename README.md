@@ -1,6 +1,8 @@
-# Albion Market PWA 2.8.4
+# Albion Market PWA 1.1.0
 
 Versión web instalable para iPhone, Android y computadores.
+
+Esta versión corrige el diseño móvil: elimina el ancho de escritorio, adapta el mercado a tarjetas, compacta los controles y respeta las áreas seguras del iPhone.
 
 ## Publicar en GitHub Pages
 
